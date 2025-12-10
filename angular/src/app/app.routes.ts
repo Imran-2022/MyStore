@@ -5,7 +5,23 @@ export const APP_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () => import('./home/home.component').then(c => c.HomeComponent),
+    redirectTo: 'sales',
+  },
+
+  {
+    path: 'sales',
+    pathMatch: 'full',
+    loadComponent: () => import('./sales/sales').then(c => c.Sales),
+  },
+  {
+    path: 'purchases',
+    pathMatch: 'full',
+    loadComponent: () => import('./purchases/purchases').then(c => c.Purchases),
+  },
+  {
+    path: 'stock-report',
+    pathMatch: 'full',
+    loadComponent: () => import('./stock-report/stock-report').then(c => c.StockReport),
   },
   {
     path: 'account',
