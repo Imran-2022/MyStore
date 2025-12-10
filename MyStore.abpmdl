@@ -1,0 +1,109 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "5.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.0.0",
+      "isInstalled": true,
+      "creationTime": "12/10/2025 16:02:15 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "MyStore.Application": {
+      "path": "src/MyStore.Application/MyStore.Application.abppkg",
+      "folder": "src"
+    },
+    "MyStore.Application.Tests": {
+      "path": "test/MyStore.Application.Tests/MyStore.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "MyStore.Domain.Shared": {
+      "path": "src/MyStore.Domain.Shared/MyStore.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "MyStore.Application.Contracts": {
+      "path": "src/MyStore.Application.Contracts/MyStore.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "MyStore.HttpApi": {
+      "path": "src/MyStore.HttpApi/MyStore.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "MyStore.HttpApi.Client": {
+      "path": "src/MyStore.HttpApi.Client/MyStore.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "MyStore.EntityFrameworkCore.Tests": {
+      "path": "test/MyStore.EntityFrameworkCore.Tests/MyStore.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "MyStore.EntityFrameworkCore": {
+      "path": "src/MyStore.EntityFrameworkCore/MyStore.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "MyStore.TestBase": {
+      "path": "test/MyStore.TestBase/MyStore.TestBase.abppkg",
+      "folder": "test"
+    },
+    "MyStore.Domain.Tests": {
+      "path": "test/MyStore.Domain.Tests/MyStore.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "MyStore.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/MyStore.HttpApi.Client.ConsoleTestApp/MyStore.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "MyStore.DbMigrator": {
+      "path": "src/MyStore.DbMigrator/MyStore.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "MyStore.HttpApi.Host": {
+      "path": "src/MyStore.HttpApi.Host/MyStore.HttpApi.Host.abppkg",
+      "folder": "src"
+    },
+    "MyStore.Domain": {
+      "path": "src/MyStore.Domain/MyStore.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}
