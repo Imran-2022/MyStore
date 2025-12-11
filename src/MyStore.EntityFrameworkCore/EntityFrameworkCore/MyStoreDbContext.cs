@@ -14,6 +14,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using MyStore.Purchases;
 
 namespace MyStore.EntityFrameworkCore;
 
@@ -40,7 +41,8 @@ public class MyStoreDbContext :
      * More info: Replacing a DbContext of a module ensures that the related module
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
-
+    public DbSet<Purchase> Purchases { get; set; }
+    public DbSet<PurchaseProduct> PurchaseProducts { get; set; }
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
     public DbSet<IdentityRole> Roles { get; set; }
@@ -87,5 +89,32 @@ public class MyStoreDbContext :
         //    b.ConfigureByConvention(); //auto configure for the base class props
         //    //...
         //});
+
+        builder.Entity<Purchase>(b =>
+        {
+            b.ToTable("Purchases");
+            b.HasKey(x => x.Id);
+
+            b.Property(x => x.PurchaseCode).IsRequired().HasMaxLength(20);
+            b.Property(x => x.SupplierName).IsRequired().HasMaxLength(PurchaseConsts.MaxSupplierNameLength);
+            b.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.Discount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PayableAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
+            b.Property(x => x.DueAmount).HasColumnType("decimal(18,2)");
+
+           b.HasMany(p => p.Products).WithOne().HasForeignKey("PurchaseId").IsRequired();
+        });
+
+        builder.Entity<PurchaseProduct>(b =>
+        {
+            b.ToTable("PurchaseProducts");
+            b.HasKey(x => x.Id);
+
+            b.Property(x => x.Warehouse).IsRequired().HasMaxLength(PurchaseConsts.MaxWarehouseNameLength);
+            b.Property(x => x.Product).IsRequired().HasMaxLength(PurchaseConsts.MaxProductNameLength);
+            b.Property(x => x.Quantity).IsRequired();
+            b.Property(x => x.Price).HasColumnType("decimal(18,2)").IsRequired();
+        });
     }
 }
