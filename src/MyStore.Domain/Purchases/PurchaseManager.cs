@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
+using Volo.Abp.Domain.Services;
 
 namespace MyStore.Purchases
 {
-    public class PurchaseManager
+    public class PurchaseManager : DomainService
     {
         public Purchase CreatePurchase(
+            string purchaseCode, // added to get from frotend. 
             string supplierName,
             DateTime dateTime,
             List<PurchaseProduct> products,
             decimal discount = 0,
-            decimal paidAmount = 0)
+            decimal paidAmount = 0
+            )
         {
             if (products == null || products.Count == 0)
             {
@@ -23,7 +26,7 @@ namespace MyStore.Purchases
                 if (p.Price <= 0) throw PurchaseDomainException.InvalidPrice();
             }
 
-            var purchaseCode = GeneratePurchaseCode(dateTime);
+            // var purchaseCode = GeneratePurchaseCode(dateTime);
 
             var purchase = new Purchase(
                 purchaseCode,
@@ -37,9 +40,9 @@ namespace MyStore.Purchases
             return purchase;
         }
 
-        private string GeneratePurchaseCode(DateTime dateTime)
-        {
-            return dateTime.ToString("yyyyMMddHHmmss"); // e.g., 20251211122128
-        }
+        // private string GeneratePurchaseCode(DateTime dateTime)
+        // {
+        //     return dateTime.ToString("yyyyMMddHHmmss"); // e.g., 20251211122128
+        // }
     }
 }

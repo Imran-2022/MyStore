@@ -48,6 +48,13 @@ namespace MyStore.Purchases
             PayableAmount = TotalAmount - Discount;
             DueAmount = PayableAmount - PaidAmount;
             if (DueAmount < 0) DueAmount = 0;
+
+            /*
+            // Domain calculates derived fields
+            TotalAmount = products.Sum(p => p.Quantity * p.Price);
+            PayableAmount = TotalAmount - discount;
+            DueAmount = PayableAmount - paidAmount;
+            */
         }
 
         public void AddProduct(PurchaseProduct product)

@@ -926,6 +926,23 @@
                     "type": "System.Collections.Generic.List<MyStore.Purchases.PurchaseDto>",
                     "typeSimple": "[MyStore.Purchases.PurchaseDto]"
                   }
+                },
+                {
+                  "name": "CreateAsync",
+                  "parametersOnMethod": [
+                    {
+                      "name": "input",
+                      "typeAsString": "MyStore.Purchases.CreateUpdatePurchaseDto, MyStore.Application.Contracts",
+                      "type": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                      "typeSimple": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                      "isOptional": false,
+                      "defaultValue": null
+                    }
+                  ],
+                  "returnValue": {
+                    "type": "MyStore.Purchases.PurchaseDto",
+                    "typeSimple": "MyStore.Purchases.PurchaseDto"
+                  }
                 }
               ]
             }
@@ -1016,6 +1033,43 @@
               "returnValue": {
                 "type": "System.Collections.Generic.List<MyStore.Purchases.PurchaseDto>",
                 "typeSimple": "[MyStore.Purchases.PurchaseDto]"
+              },
+              "allowAnonymous": null,
+              "implementFrom": "MyStore.Purchases.IPurchaseAppService"
+            },
+            "CreateAsyncByInput": {
+              "uniqueName": "CreateAsyncByInput",
+              "name": "CreateAsync",
+              "httpMethod": "POST",
+              "url": "api/app/purchase",
+              "supportedVersions": [],
+              "parametersOnMethod": [
+                {
+                  "name": "input",
+                  "typeAsString": "MyStore.Purchases.CreateUpdatePurchaseDto, MyStore.Application.Contracts",
+                  "type": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                  "typeSimple": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                  "isOptional": false,
+                  "defaultValue": null
+                }
+              ],
+              "parameters": [
+                {
+                  "nameOnMethod": "input",
+                  "name": "input",
+                  "jsonName": null,
+                  "type": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                  "typeSimple": "MyStore.Purchases.CreateUpdatePurchaseDto",
+                  "isOptional": false,
+                  "defaultValue": null,
+                  "constraintTypes": null,
+                  "bindingSourceId": "Body",
+                  "descriptorName": ""
+                }
+              ],
+              "returnValue": {
+                "type": "MyStore.Purchases.PurchaseDto",
+                "typeSimple": "MyStore.Purchases.PurchaseDto"
               },
               "allowAnonymous": null,
               "implementFrom": "MyStore.Purchases.IPurchaseAppService"
@@ -3777,6 +3831,144 @@
     }
   },
   "types": {
+    "MyStore.Purchases.CreateUpdatePurchaseDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "PurchaseCode",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "SupplierName",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "DateTime",
+          "jsonName": null,
+          "type": "System.DateTime",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Discount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "PaidAmount",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Products",
+          "jsonName": null,
+          "type": "[MyStore.Purchases.CreateUpdatePurchaseProductDto]",
+          "typeSimple": "[MyStore.Purchases.CreateUpdatePurchaseProductDto]",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
+    "MyStore.Purchases.CreateUpdatePurchaseProductDto": {
+      "baseType": null,
+      "isEnum": false,
+      "enumNames": null,
+      "enumValues": null,
+      "genericArguments": null,
+      "properties": [
+        {
+          "name": "Warehouse",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Product",
+          "jsonName": null,
+          "type": "System.String",
+          "typeSimple": "string",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Quantity",
+          "jsonName": null,
+          "type": "System.Int32",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        },
+        {
+          "name": "Price",
+          "jsonName": null,
+          "type": "System.Decimal",
+          "typeSimple": "number",
+          "isRequired": false,
+          "minLength": null,
+          "maxLength": null,
+          "minimum": null,
+          "maximum": null,
+          "regex": null
+        }
+      ]
+    },
     "MyStore.Purchases.PurchaseDto": {
       "baseType": null,
       "isEnum": false,

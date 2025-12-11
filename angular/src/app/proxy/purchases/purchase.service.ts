@@ -1,4 +1,4 @@
-import type { PurchaseDto } from './models';
+import type { CreateUpdatePurchaseDto, PurchaseDto } from './models';
 import { RestService, Rest } from '@abp/ng.core';
 import { Injectable, inject } from '@angular/core';
 
@@ -8,6 +8,15 @@ import { Injectable, inject } from '@angular/core';
 export class PurchaseService {
   private restService = inject(RestService);
   apiName = 'Default';
+  
+
+  create = (input: CreateUpdatePurchaseDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, PurchaseDto>({
+      method: 'POST',
+      url: '/api/app/purchase',
+      body: input,
+    },
+    { apiName: this.apiName,...config });
   
 
   get = (id: string, config?: Partial<Rest.Config>) =>

@@ -10,4 +10,5 @@ public interface IPurchaseAppService : IApplicationService
     Task<PurchaseDto> GetAsync(Guid id);
     Task<PurchaseDto> GetByCodeAsync(string purchaseCode);
     Task<List<PurchaseDto>> GetListAsync();
+    Task<PurchaseDto> CreateAsync(CreateUpdatePurchaseDto input);
 }

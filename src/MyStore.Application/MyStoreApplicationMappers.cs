@@ -29,3 +29,4 @@ public partial class PurchaseProductToPurchaseProductDtoMapper : MapperBase<Purc
     public override partial PurchaseProductDto Map(PurchaseProduct source);
     public override partial void Map(PurchaseProduct source, PurchaseProductDto destination);
 }
+
