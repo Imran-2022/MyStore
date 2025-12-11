@@ -21,7 +21,7 @@ export const APP_ROUTES: Routes = [
   {
     path: 'stock-report',
     pathMatch: 'full',
-    loadComponent: () => import('./stock-report/stock-report').then(c => c.StockReport),
+    loadComponent: () => import('./stock-report/stock-report').then(c => c.StockReport ),
   },
   {
     path: 'account',

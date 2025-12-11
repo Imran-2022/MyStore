@@ -1,1 +1,21 @@
-<p>stock-report works!</p>
+<div class="container mt-4">
+  <h3>Stock Report</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead class="table-secondary text-center">
+        <tr>
+          <th>Product Name</th>
+          <th>Warehouse Name</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rec of stockRecords">
+          <td class="">{{ rec.productName }}</td>
+          <td class="">{{ rec.warehouseName }}</td>
+          <td class="">{{ rec.quantity }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
