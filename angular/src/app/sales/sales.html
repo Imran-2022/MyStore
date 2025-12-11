@@ -9,7 +9,7 @@
       <thead class="table-secondary text-center">
         <tr>
           <th>Customer Name</th>
-          <th>Date</th>
+          <th>Date & Time</th>
           <th>Sales Details</th>
           <th>Grand Total ($)</th>
         </tr>
@@ -17,7 +17,7 @@
       <tbody>
         <tr *ngFor="let sale of sales">
           <td class="align-middle text-center">{{ sale.customer }}</td>
-          <td class="align-middle text-center">{{ sale.date | date: 'mediumDate' }}</td>
+          <td class="align-middle text-center">{{ sale.dateTime | date:'medium' }}</td>
           <td>
             <table class="table table-bordered mb-0 text-center">
               <thead class="table-secondary">
@@ -62,7 +62,7 @@
 
       <div class="mb-3">
         <label for="date" class="form-label">Date</label>
-        <input id="date" type="date" class="form-control" name="date" [(ngModel)]="newSale.date" required />
+        <input id="date"  type="datetime-local" class="form-control" name="dateTime" [(ngModel)]="newSale.dateTime" required />
       </div>
 
       <div class="mb-3">

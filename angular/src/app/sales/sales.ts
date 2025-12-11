@@ -21,7 +21,7 @@ interface SaleProduct {
 
 interface Sale {
   customer: string;
-  date: string; // for input binding
+  dateTime: string;
   products: SaleProduct[];
   grandTotal: number;
 }
@@ -50,15 +50,20 @@ export class Sales {
   getEmptySale(): Sale {
     return {
       customer: '',
-      date: this.getToday(),
+      dateTime: this.getCurrentDateTime(),
       products: [{ warehouse: undefined, product: undefined, quantity: 1 }],
       grandTotal: 0
     };
   }
 
-  getToday(): string {
-    const today = new Date();
-    return today.toISOString().split('T')[0]; // YYYY-MM-DD
+  getCurrentDateTime(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day}T${hour}:${minute}`;
   }
 
   openModal(content: any) {
@@ -99,10 +104,11 @@ export class Sales {
 
     const saleToAdd: Sale = {
       customer: this.newSale.customer,
-      date: this.newSale.date,
+      dateTime: this.newSale.dateTime,
       products: this.newSale.products.map(p => ({ ...p })),
       grandTotal: this.newSale.grandTotal
     };
+    console.log('Saving sale:', saleToAdd);
     this.sales.push(saleToAdd);
     modal.close();
   }

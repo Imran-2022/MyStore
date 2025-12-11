@@ -119,6 +119,7 @@ generatePurchaseCode(date: Date): string {
     if (!formValid || !this.canSavePurchase()) return;
 
     const saved = JSON.parse(JSON.stringify(this.newPurchase)); // deep copy
+    console.log('saved purchase', saved);
     this.purchases.push(saved);
 
     modal.close();
