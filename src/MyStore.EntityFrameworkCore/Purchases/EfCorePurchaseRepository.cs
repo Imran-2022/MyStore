@@ -21,24 +21,28 @@ namespace MyStore.Purchases
             return await DbSet
                 .Include(p => p.Products)
                 .FirstOrDefaultAsync(p => p.PurchaseCode == purchaseCode);
+
+                // 
+                // return await DbSet.FirstOrDefaultAsync(p => p.PurchaseCode == purchaseCode);
+                // this also work . but i tried for an issue. 
         }
 
         // 💡 NEW CODE START: Override GetListAsync for eager loading
         public override async Task<List<Purchase>> GetListAsync(
             bool includeDetails = false,
             System.Threading.CancellationToken cancellationToken = default)
-        {
-            var query = await GetQueryableAsync();
-
-            if (includeDetails)
             {
-                // This is the crucial line: Eagerly load the nested collection
-                // 'Products' must be the name of the List<PurchaseProduct> property on your Purchase entity.
-                query = query.Include(p => p.Products);
-            }
+                var query = await GetQueryableAsync();
 
-            return await query.ToListAsync(cancellationToken);
-        }
+                if (includeDetails)
+                {
+                    // This is the crucial line: Eagerly load the nested collection
+                    // 'Products' must be the name of the List<PurchaseProduct> property on your Purchase entity.
+                    query = query.Include(p => p.Products);
+                }
+
+                return await query.ToListAsync(cancellationToken);
+            }
         // 💡 NEW CODE END
     }
 }

@@ -21,6 +21,7 @@ public partial class PurchaseToPurchaseDtoMapper : MapperBase<Purchase, Purchase
     public override partial void Map(Purchase source, PurchaseDto destination);
 }
 
+// it works, without bellow code however. 
 [Mapper]
 public partial class PurchaseProductToPurchaseProductDtoMapper : MapperBase<PurchaseProduct, PurchaseProductDto>
 {
