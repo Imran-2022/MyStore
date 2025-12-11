@@ -1,3 +1,4 @@
+using MyStore.Purchases;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
 
@@ -13,3 +14,17 @@ namespace MyStore;
  *    public override partial void Map(BookDto source, CreateUpdateBookDto destination);
  * }
  */
+[Mapper]
+public partial class PurchaseToPurchaseDtoMapper : MapperBase<Purchase, PurchaseDto>
+{
+    public override partial PurchaseDto Map(Purchase source);
+    public override partial void Map(Purchase source, PurchaseDto destination);
+}
+
+[Mapper]
+public partial class PurchaseProductToPurchaseProductDtoMapper : MapperBase<PurchaseProduct, PurchaseProductDto>
+{
+    // The required partial methods
+    public override partial PurchaseProductDto Map(PurchaseProduct source);
+    public override partial void Map(PurchaseProduct source, PurchaseProductDto destination);
+}

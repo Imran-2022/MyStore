@@ -8,4 +8,5 @@ namespace MyStore.Purchases
     {
         Task<Purchase> GetByCodeAsync(string purchaseCode);
     }
+    
 }
