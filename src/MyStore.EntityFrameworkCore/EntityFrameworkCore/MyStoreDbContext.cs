@@ -80,7 +80,7 @@ public class MyStoreDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
-        
+
         /* Configure your own tables/entities inside here */
 
         //builder.Entity<YourEntity>(b =>
@@ -102,8 +102,6 @@ public class MyStoreDbContext :
             b.Property(x => x.PayableAmount).HasColumnType("decimal(18,2)");
             b.Property(x => x.PaidAmount).HasColumnType("decimal(18,2)");
             b.Property(x => x.DueAmount).HasColumnType("decimal(18,2)");
-
-           b.HasMany(p => p.Products).WithOne().HasForeignKey("PurchaseId").IsRequired();
         });
 
         builder.Entity<PurchaseProduct>(b =>
@@ -115,6 +113,13 @@ public class MyStoreDbContext :
             b.Property(x => x.Product).IsRequired().HasMaxLength(PurchaseConsts.MaxProductNameLength);
             b.Property(x => x.Quantity).IsRequired();
             b.Property(x => x.Price).HasColumnType("decimal(18,2)").IsRequired();
+
+            // Correct 1-to-many
+            b.HasOne(pp => pp.Purchase)
+             .WithMany(p => p.Products)
+             .HasForeignKey(pp => pp.PurchaseId)
+             .IsRequired();
         });
+
     }
 }

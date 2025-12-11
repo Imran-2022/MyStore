@@ -19,7 +19,7 @@ namespace MyStore.EntityFrameworkCore
 
         public async Task SeedAsync(DataSeedContext context)
         {
-            // Check if already exists
+            // Check if data already exists
             if (await _purchaseRepository.CountAsync() > 0)
             {
                 return; // Already seeded
@@ -68,9 +68,14 @@ namespace MyStore.EntityFrameworkCore
                 )
             };
 
+            // Insert each purchase into the repository
             foreach (var purchase in purchases)
             {
-                await _purchaseRepository.InsertAsync(purchase);
+                // Make sure totals are recalculated before inserting
+                purchase.CalculateTotals();
+
+                // Insert purchase, which will also insert related PurchaseProducts
+                await _purchaseRepository.InsertAsync(purchase, autoSave: true); // autoSave = true to ensure all related entities are saved.
             }
         }
     }

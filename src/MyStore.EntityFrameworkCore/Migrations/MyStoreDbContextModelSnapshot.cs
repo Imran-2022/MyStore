@@ -1963,11 +1963,13 @@ namespace MyStore.Migrations
 
             modelBuilder.Entity("MyStore.Purchases.PurchaseProduct", b =>
                 {
-                    b.HasOne("MyStore.Purchases.Purchase", null)
+                    b.HasOne("MyStore.Purchases.Purchase", "Purchase")
                         .WithMany("Products")
                         .HasForeignKey("PurchaseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Purchase");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>

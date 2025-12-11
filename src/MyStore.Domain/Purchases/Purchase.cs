@@ -60,6 +60,8 @@ namespace MyStore.Purchases
     public class PurchaseProduct : Entity<Guid>
     {
         public string Warehouse { get; private set; }
+        public Guid  PurchaseId { get; set; }
+        public Purchase Purchase { get; set; } 
         public string Product { get; private set; }
         public int Quantity { get; private set; }
         public decimal Price { get; private set; }
