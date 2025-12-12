@@ -15,7 +15,7 @@ using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using MyStore.Purchases;
-
+using MyStore.Stocks;
 namespace MyStore.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
@@ -41,6 +41,7 @@ public class MyStoreDbContext :
      * More info: Replacing a DbContext of a module ensures that the related module
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
+    public DbSet<Stock> Stocks { get; set; }
     public DbSet<Purchase> Purchases { get; set; }
     public DbSet<PurchaseProduct> PurchaseProducts { get; set; }
     // Identity
@@ -121,5 +122,16 @@ public class MyStoreDbContext :
              .IsRequired();
         });
 
+
+        // ----------------------------------------------------below for stock report----------------------
+
+        builder.Entity<Stock>(b =>
+            {
+                b.ToTable("Stocks");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.Product).IsRequired().HasMaxLength(128);
+                b.Property(x => x.Warehouse).IsRequired().HasMaxLength(128);
+                b.Property(x => x.Quantity).IsRequired();
+            });
     }
 }
