@@ -1,4 +1,5 @@
 using MyStore.Purchases;
+using MyStore.Stocks;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
 
@@ -30,3 +31,9 @@ public partial class PurchaseProductToPurchaseProductDtoMapper : MapperBase<Purc
     public override partial void Map(PurchaseProduct source, PurchaseProductDto destination);
 }
 
+[Mapper]
+public partial class StockMapper : MapperBase<Stock, StockDto>
+{
+    public override partial StockDto Map(Stock source);
+    public override partial void Map(Stock source, StockDto destination);
+}

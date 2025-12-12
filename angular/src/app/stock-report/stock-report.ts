@@ -1,12 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface StockRecord {
-  productName: string;
-  warehouseName: string;
-  quantity: number;
-}
+import { StockService, StockDto } from '../proxy/stocks';
 
 @Component({
   selector: 'app-stock-report',
@@ -15,32 +10,46 @@ interface StockRecord {
   templateUrl: './stock-report.html',
   styleUrls: ['./stock-report.scss']
 })
-export class StockReport {
+export class StockReport implements OnInit {
 
-  stockRecords: StockRecord[] = [
-    { productName: 'Apple', warehouseName: 'Warehouse A', quantity: 500 },
-    { productName: 'Banana', warehouseName: 'Warehouse A', quantity: 200 },
-    { productName: 'Orange', warehouseName: 'Warehouse B', quantity: 300 },
-    { productName: 'Mango', warehouseName: 'Warehouse B', quantity: 150 },
-    { productName: 'Pineapple', warehouseName: 'Warehouse C', quantity: 80 }
-  ];
+  stockRecords: StockDto[] = [];
+  filteredStockRecords: StockDto[] = [];
 
-  // Unique lists
-  uniqueProducts: string[] = [...new Set(this.stockRecords.map(r => r.productName))];
-  uniqueWarehouses: string[] = [...new Set(this.stockRecords.map(r => r.warehouseName))];
+  uniqueProducts: string[] = [];
+  uniqueWarehouses: string[] = [];
 
-  // Default filters
-  selectedProduct: string = "all";
-  selectedWarehouse: string = "all";
+  selectedProduct: string = 'all';
+  selectedWarehouse: string = 'all';
 
-  filteredStockRecords: StockRecord[] = this.stockRecords;
+  constructor(private stockService: StockService) {}
 
-  filterData() {
-    this.filteredStockRecords = this.stockRecords.filter(record => {
-      const matchProduct = this.selectedProduct === "all" || record.productName === this.selectedProduct;
-      const matchWarehouse = this.selectedWarehouse === "all" || record.warehouseName === this.selectedWarehouse;
-      return matchProduct && matchWarehouse;
+  ngOnInit() {
+    this.loadStock();
+  }
+
+  loadStock() {
+    this.stockService.getList().subscribe({
+      next: (res) => {
+        this.stockRecords = res;
+        this.filteredStockRecords = res;
+
+        // Build unique filters
+        this.uniqueProducts = [...new Set(res.map(r => r.product))];
+        this.uniqueWarehouses = [...new Set(res.map(r => r.warehouse))];
+      },
+      error: (err) => console.error('Failed to load stock report', err)
     });
   }
 
+  filterData() {
+    this.filteredStockRecords = this.stockRecords.filter(record => {
+      const matchProduct =
+        this.selectedProduct === 'all' || record.product === this.selectedProduct;
+
+      const matchWarehouse =
+        this.selectedWarehouse === 'all' || record.warehouse === this.selectedWarehouse;
+
+      return matchProduct && matchWarehouse;
+    });
+  }
 }
