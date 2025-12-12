@@ -10,25 +10,35 @@
         <table class="table table-bordered table-striped">
             <thead class="table-secondary text-center">
                 <tr>
+                    <th>Action</th>
                     <th>Date & Time</th>
                     <th>Purchase Code</th>
                     <th>Supplier Name</th>
                     <th>Total</th>
                     <th>Paid</th>
                     <th>Due</th>
-                    <th>Product Details</th>
+                    <!-- <th>Product Details</th> -->
                 </tr>
             </thead>
 
             <tbody>
                 <tr *ngFor="let p of purchases">
+                    <td class="text-center">
+                    <div ngbDropdown class="d-inline-block">
+                    <button class="btn btn-sm btn-primary" ngbDropdownToggle>Action</button>
+                    <div ngbDropdownMenu>
+                        <button class="dropdown-item" (click)="openUpdatePurchase(p)">Update</button>
+                        <button class="dropdown-item text-danger" (click)="deletePurchase(p)">Delete</button>
+                    </div>
+                    </div>
+                </td>
                     <td class="text-center">{{ p.dateTime | date:'medium' }}</td>
                     <td class="text-center">{{ p.purchaseCode }}</td>
                     <td class="text-center">{{ p.supplierName }}</td>
                     <td class="text-center">{{ p.totalAmount.toFixed(2) }}</td>
                     <td class="text-center">{{ p.paidAmount.toFixed(2) }}</td>
                     <td class="text-center">{{ p.dueAmount.toFixed(2) }}</td>
-                    <td>
+                    <!-- <td>
                         <table class="table table-bordered mb-0 text-center">
                             <thead class="table-light">
                                 <tr>
@@ -51,7 +61,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </td>
+                    </td> -->
                 </tr>
             </tbody>
         </table>

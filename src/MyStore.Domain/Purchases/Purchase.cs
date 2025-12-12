@@ -59,8 +59,59 @@ namespace MyStore.Purchases
 
         public void AddProduct(PurchaseProduct product)
         {
+            if (product == null) throw new ArgumentNullException(nameof(product));
             Products.Add(product);
             CalculateTotals();
+        }
+        // Domain methods for safe updates
+        public void SetSupplierName(string supplierName)
+        {
+            if (string.IsNullOrWhiteSpace(supplierName))
+                throw new ArgumentException("Supplier name cannot be empty.", nameof(supplierName));
+
+            SupplierName = supplierName;
+        }
+
+        public void SetDateTime(DateTime dateTime)
+        {
+            DateTime = dateTime;
+        }
+
+        public void SetDiscount(decimal discount)
+        {
+            if (discount < 0) throw new ArgumentException("Discount cannot be negative.", nameof(discount));
+            Discount = discount;
+            CalculateTotals();
+        }
+
+        public void SetPaidAmount(decimal paidAmount)
+        {
+            if (paidAmount < 0) throw new ArgumentException("Paid amount cannot be negative.", nameof(paidAmount));
+            PaidAmount = paidAmount;
+            CalculateTotals();
+        }
+
+        public void ReplaceProducts(List<PurchaseProduct> products)
+        {
+            if (products == null || products.Count == 0)
+                throw new ArgumentException("Purchase must have at least one product.", nameof(products));
+
+            Products.Clear();
+            foreach (var p in products)
+            {
+                if (p.Quantity <= 0) throw new ArgumentException("Product quantity must be greater than zero.");
+                if (p.Price < 0) throw new ArgumentException("Product price cannot be negative.");
+                Products.Add(p);
+            }
+
+            CalculateTotals();
+        }
+        // Optional: allow explicit setting of purchase code (if needed)
+        public void SetPurchaseCode(string purchaseCode)
+        {
+            if (string.IsNullOrWhiteSpace(purchaseCode))
+                throw new ArgumentException("PurchaseCode cannot be empty.", nameof(purchaseCode));
+            PurchaseCode = purchaseCode;
         }
     }
 

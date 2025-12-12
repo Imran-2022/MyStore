@@ -65,5 +65,41 @@ namespace MyStore.Purchases
             // Return DTO
             return ObjectMapper.Map<Purchase, PurchaseDto>(purchase);
         }
+         public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
+        {
+            var purchase = await _purchaseRepository.GetByIdWithProductsAsync(id)
+                ?? throw new UserFriendlyException($"Purchase with id '{id}' not found.");
+
+            if (input.Products == null || input.Products.Count == 0)
+                throw new UserFriendlyException("Purchase must contain at least one product.");
+
+            // Update simple props
+            if (!string.Equals(purchase.SupplierName, input.SupplierName, StringComparison.Ordinal))
+            {
+                purchase.SetSupplierName(input.SupplierName);
+            }
+
+            purchase.SetDateTime(input.DateTime);
+            purchase.SetDiscount(input.Discount);
+            purchase.SetPaidAmount(input.PaidAmount);
+
+            // Replace products (simple approach: create new product entities)
+            var domainProducts = input.Products.Select(p => new PurchaseProduct(
+                Guid.NewGuid(),
+                p.Warehouse,
+                p.Product,
+                p.Quantity,
+                p.Price)).ToList();
+
+            purchase.ReplaceProducts(domainProducts);
+
+            await _purchaseRepository.UpdateAsync(purchase, autoSave: true);
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            await _purchaseRepository.DeleteAsync(id);
+        }
     }
+    
 }
