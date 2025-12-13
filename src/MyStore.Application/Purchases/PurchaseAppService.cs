@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using MyStore.Stocks;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
 
 namespace MyStore.Purchases
 {
@@ -11,11 +14,17 @@ namespace MyStore.Purchases
     {
         private readonly IPurchaseRepository _purchaseRepository;
         private readonly PurchaseManager _purchaseManager;
+        private readonly IRepository<Stock, Guid> _stockRepository;
 
-        public PurchaseAppService(IPurchaseRepository purchaseRepository, PurchaseManager purchaseManager)
+
+        public PurchaseAppService(
+            IPurchaseRepository purchaseRepository,
+            PurchaseManager purchaseManager,
+            IRepository<Stock, Guid> stockRepository)
         {
             _purchaseRepository = purchaseRepository;
             _purchaseManager = purchaseManager;
+            _stockRepository = stockRepository;
         }
 
         public async Task<PurchaseDto> GetAsync(Guid id)
@@ -62,10 +71,38 @@ namespace MyStore.Purchases
             // Save to DB
             await _purchaseRepository.InsertAsync(purchase, autoSave: true);
 
+            // 🔥 STOCK HANDLING (CREATE ONLY)
+            foreach (var product in purchase.Products)
+            {
+                var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+                    s.Product == product.Product &&
+                    s.Warehouse == product.Warehouse
+                );
+
+                if (stock != null)
+                {
+                    // Increase existing stock
+                    stock.Increase(product.Quantity);
+                    await _stockRepository.UpdateAsync(stock);
+                }
+                else
+                {
+                    // Create new stock entry
+                    var newStock = new Stock(
+                        Guid.NewGuid(),
+                        product.Product,
+                        product.Warehouse,
+                        product.Quantity
+                    );
+
+                    await _stockRepository.InsertAsync(newStock);
+                }
+            }
+
             // Return DTO
             return ObjectMapper.Map<Purchase, PurchaseDto>(purchase);
         }
-         public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
+        public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
         {
             var purchase = await _purchaseRepository.GetByIdWithProductsAsync(id)
                 ?? throw new UserFriendlyException($"Purchase with id '{id}' not found.");
@@ -96,10 +133,41 @@ namespace MyStore.Purchases
             await _purchaseRepository.UpdateAsync(purchase, autoSave: true);
         }
 
+        // public async Task DeleteAsync(Guid id)
+        // {
+        //     await _purchaseRepository.DeleteAsync(id);
+        // }
+
         public async Task DeleteAsync(Guid id)
         {
-            await _purchaseRepository.DeleteAsync(id);
+            var purchase = await _purchaseRepository.GetWithProductsAsync(id)
+                ?? throw new UserFriendlyException("Purchase not found");
+            // Logger.LogWarning($"Products count = {purchase.Products.Count}"); this shows producs count =0. 
+
+            foreach (var product in purchase.Products)
+            {
+                var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+                    s.Product == product.Product &&
+                    s.Warehouse == product.Warehouse
+                );
+
+                if (stock == null)
+                    continue;
+
+                stock.Quantity -= product.Quantity;
+
+                if (stock.Quantity <= 0)
+                {
+                    await _stockRepository.DeleteAsync(stock);
+                }
+                else
+                {
+                    await _stockRepository.UpdateAsync(stock);
+                }
+            }
+
+            await _purchaseRepository.DeleteAsync(purchase);
         }
+
     }
-    
 }

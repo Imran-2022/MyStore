@@ -11,6 +11,8 @@ namespace MyStore.Purchases
          // Eager load helpers
         Task<Purchase> GetByIdWithProductsAsync(Guid id);
         Task<List<Purchase>> GetListWithProductsAsync();
+        Task<Purchase> GetWithProductsAsync(Guid id);
+
     }
     
 }

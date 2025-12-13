@@ -40,6 +40,14 @@ namespace MyStore.Purchases
                 .ToListAsync();
         }
 
+        public async Task<Purchase> GetWithProductsAsync(Guid id)
+            {
+                return await (await GetDbSetAsync())
+                    .Include(p => p.Products)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+            }
+
+
         // 💡 NEW CODE START: Override GetListAsync for eager loading
         // Optionally override GetListAsync if callers use repository.GetListAsync(includeDetails: true)
         public override async Task<List<Purchase>> GetListAsync(
