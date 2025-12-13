@@ -63,6 +63,38 @@ namespace MyStore.Sales
 
             await _saleRepository.DeleteAsync(sale, autoSave: true);
         }
+        public async Task<SaleDto> UpdateAsync(Guid id, CreateUpdateSaleDto input)
+        {
+            var sale = await _saleRepository.GetWithProductsAsync(id);
+            if (sale == null)
+            {
+                throw new UserFriendlyException("Sale not found");
+            }
+
+            // Update root fields
+            sale.Customer = input.Customer;
+            sale.DateTime = input.DateTime;
+
+            // 🔥 Replace child collection (BEST PRACTICE)
+            sale.Products.Clear();
+
+            foreach (var p in input.Products)
+            {
+                sale.Products.Add(
+                    new SaleProduct(
+                        GuidGenerator.Create(),
+                        p.Warehouse,
+                        p.Product,
+                        p.Quantity,
+                        p.Price
+                    )
+                );
+            }
+
+            await _saleRepository.UpdateAsync(sale, autoSave: true);
+
+            return ObjectMapper.Map<Sale, SaleDto>(sale);
+        }
 
 
     }

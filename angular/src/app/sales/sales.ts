@@ -1,22 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { StockService, StockDto } from '../proxy/stocks';
-import { CreateUpdateSaleDto, SaleDto, SaleService } from '../proxy/sales';
+import { SaleService, SaleDto, CreateUpdateSaleDto } from '../proxy/sales';
 
-interface SaleProduct {
+interface SaleProductUI {
   warehouse: string | null;
   product: string | null;
   quantity: number;
   price: number;
 }
 
-interface Sale {
+interface SaleUI {
   id?: string;
   customer: string;
   dateTime: string;
-  products: SaleProduct[];
+  products: SaleProductUI[];
   grandTotal: number;
 }
 
@@ -28,46 +28,38 @@ interface Sale {
 })
 export class Sales implements OnInit {
 
-  // Stock from backend
   stockList: StockDto[] = [];
   warehouses: string[] = [];
-
-  // Sales records from backend
   sales: SaleDto[] = [];
 
-  // New sale being created
-  newSale: Sale = this.emptySale();
+  newSale!: SaleUI;
+  isEditMode = false;
 
   constructor(
     private modal: NgbModal,
     private stockService: StockService,
     private saleService: SaleService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadStock();
     this.loadSales();
   }
 
-  // Load stock from backend
   loadStock() {
     this.stockService.getList().subscribe(res => {
       this.stockList = res;
-
-      // Only warehouses with available stock
       this.warehouses = [...new Set(
-        this.stockList.filter(s => s.quantity > 0).map(s => s.warehouse)
+        res.filter(x => x.quantity > 0).map(x => x.warehouse)
       )];
     });
   }
 
-  // Load sales from backend
   loadSales() {
     this.saleService.getList().subscribe(res => this.sales = res);
   }
 
-  // Initialize empty sale
-  emptySale(): Sale {
+  emptySale(): SaleUI {
     return {
       customer: '',
       dateTime: new Date().toISOString().slice(0, 16),
@@ -76,13 +68,39 @@ export class Sales implements OnInit {
     };
   }
 
-  // Open new sale modal
-  openModal(tpl: any) {
+  openCreateModal(tpl: any) {
+    this.isEditMode = false;
     this.newSale = this.emptySale();
     this.modal.open(tpl, { size: 'xl' });
   }
 
-  // Add / remove product rows
+  openEditModal(sale: SaleDto, tpl: TemplateRef<any>) {
+    this.isEditMode = true;
+
+    // Map sale to UI model
+    this.newSale = {
+      id: sale.id,
+      customer: sale.customer || '',
+      dateTime: sale.dateTime!.slice(0, 16),
+      products: sale.products.map(p => ({
+        warehouse: p.warehouse || null,
+        product: p.product || null,
+        quantity: p.quantity,
+        price: p.price
+      })),
+      grandTotal: this.getSaleTotal(sale)
+    };
+
+    // OPEN MODAL
+    this.modal.open(tpl, { size: 'xl' });
+  }
+
+
+
+  getProducts(warehouse: string | null) {
+    return this.stockList.filter(s => s.warehouse === warehouse && s.quantity > 0);
+  }
+
   addRow() {
     this.newSale.products.push({ warehouse: null, product: null, quantity: 1, price: 0 });
   }
@@ -92,49 +110,22 @@ export class Sales implements OnInit {
     this.calculateTotal();
   }
 
-  // Products available in selected warehouse with positive stock
-  getProducts(warehouse: string | null) {
-    return this.stockList.filter(
-      s => s.warehouse === warehouse && s.quantity > 0
-    );
-  }
-
-  // When warehouse changes, reset product & price
   onWarehouseChange(i: number) {
-    const p = this.newSale.products[i];
-    p.product = null;
-    p.price = 0;
+    this.newSale.products[i].product = null;
     this.calculateTotal();
   }
 
-  // When product changes, optionally auto-fill price
-  onProductChange(i: number) {
-    const p = this.newSale.products[i];
-    const stock = this.stockList.find(
-      s => s.warehouse === p.warehouse && s.product === p.product
-    );
-    if (stock) {
-      // Default price = 0 (can be edited by user)
-      p.price = p.price || 0;
-    }
-    this.calculateTotal();
-  }
-
-  // Calculate grand total
   calculateTotal() {
     this.newSale.grandTotal = this.newSale.products.reduce(
-      (sum, p) => sum + (p.quantity * p.price || 0),
-      0
+      (sum, p) => sum + p.quantity * p.price, 0
     );
   }
 
-  // Form validation
-  canSave(): boolean {
-    return this.newSale.customer.trim() !== '' &&
+  canSave() {
+    return this.newSale.customer &&
       this.newSale.products.every(p => p.warehouse && p.product && p.quantity > 0);
   }
 
-  // Save sale using SaleService (backend)
   saveSale(modal: any) {
     if (!this.canSave()) return;
 
@@ -149,14 +140,39 @@ export class Sales implements OnInit {
       }))
     };
 
-    this.saleService.create(dto).subscribe({
-      next: () => {
-        this.loadSales(); // refresh sales list
-        modal.close();
-      },
-      error: err => {
-        console.error('Error saving sale', err);
-      }
+    const request$ = this.isEditMode
+      ? this.saleService.update(this.newSale.id!, dto)
+      : this.saleService.create(dto);
+
+    request$.subscribe(() => {
+      this.loadSales();
+      modal.close();
     });
   }
+
+  getSaleTotal(sale: SaleDto): number {
+    return sale.products.reduce(
+      (sum, p) => sum + p.quantity * p.price, 0
+    );
+  }
+  deleteSale(sale: SaleDto) {
+    if (!sale.id) return;
+
+    if (confirm('Are you sure you want to delete this sale?')) {
+      this.saleService.delete(sale.id).subscribe(() => {
+        this.loadSales();
+      });
+    }
+  }
+  onProductChange(i: number) {
+    const p = this.newSale.products[i];
+    const stock = this.stockList.find(
+      s => s.warehouse === p.warehouse && s.product === p.product
+    );
+    if (stock) {
+      p.price = p.price || 0; // keep previous price or default 0
+    }
+    this.calculateTotal();
+  }
+
 }

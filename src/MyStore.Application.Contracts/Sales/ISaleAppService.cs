@@ -10,6 +10,7 @@ namespace MyStore.Sales
         Task<List<SaleDto>> GetListAsync();
         Task<SaleDto> GetAsync(Guid id);
         Task<SaleDto> CreateAsync(CreateUpdateSaleDto input);
+        Task<SaleDto> UpdateAsync(Guid id, CreateUpdateSaleDto input);
         Task DeleteAsync(Guid id);
     }
 }

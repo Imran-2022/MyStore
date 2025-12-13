@@ -2,7 +2,14 @@
 export interface CreateUpdateSaleDto {
   customer?: string;
   dateTime?: string;
-  products: SaleProductDto[];
+  products: CreateUpdateSaleProductDto[];
+}
+
+export interface CreateUpdateSaleProductDto {
+  warehouse?: string;
+  product?: string;
+  quantity: number;
+  price: number;
 }
 
 export interface SaleDto {

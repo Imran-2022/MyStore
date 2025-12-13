@@ -19,6 +19,14 @@ export class SaleService {
     { apiName: this.apiName,...config });
   
 
+  delete = (id: string, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, void>({
+      method: 'DELETE',
+      url: `/api/app/sale/${id}`,
+    },
+    { apiName: this.apiName,...config });
+  
+
   get = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, SaleDto>({
       method: 'GET',
@@ -31,6 +39,15 @@ export class SaleService {
     this.restService.request<any, SaleDto[]>({
       method: 'GET',
       url: '/api/app/sale',
+    },
+    { apiName: this.apiName,...config });
+  
+
+  update = (id: string, input: CreateUpdateSaleDto, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, SaleDto>({
+      method: 'PUT',
+      url: `/api/app/sale/${id}`,
+      body: input,
     },
     { apiName: this.apiName,...config });
 }
