@@ -75,8 +75,8 @@ namespace MyStore.Purchases
             foreach (var product in purchase.Products)
             {
                 var stock = await _stockRepository.FirstOrDefaultAsync(s =>
-                    s.Product == product.Product &&
-                    s.Warehouse == product.Warehouse
+                    s.Product.ToLower() == product.Product.ToLower() &&
+                    s.Warehouse.ToLower() == product.Warehouse.ToLower()
                 );
 
                 if (stock != null)
@@ -102,72 +102,240 @@ namespace MyStore.Purchases
             // Return DTO
             return ObjectMapper.Map<Purchase, PurchaseDto>(purchase);
         }
-        public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
-        {
-            var purchase = await _purchaseRepository.GetByIdWithProductsAsync(id)
-                ?? throw new UserFriendlyException($"Purchase with id '{id}' not found.");
+        // public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
+        // {
+        //     var purchase = await _purchaseRepository.GetByIdWithProductsAsync(id)
+        //         ?? throw new UserFriendlyException($"Purchase with id '{id}' not found.");
 
-            if (input.Products == null || input.Products.Count == 0)
-                throw new UserFriendlyException("Purchase must contain at least one product.");
+        //     if (input.Products == null || input.Products.Count == 0)
+        //         throw new UserFriendlyException("Purchase must contain at least one product.");
 
-            // Update simple props
-            if (!string.Equals(purchase.SupplierName, input.SupplierName, StringComparison.Ordinal))
-            {
-                purchase.SetSupplierName(input.SupplierName);
-            }
+        //     // Update simple props
+        //     if (!string.Equals(purchase.SupplierName, input.SupplierName, StringComparison.Ordinal))
+        //     {
+        //         purchase.SetSupplierName(input.SupplierName);
+        //     }
 
-            purchase.SetDateTime(input.DateTime);
-            purchase.SetDiscount(input.Discount);
-            purchase.SetPaidAmount(input.PaidAmount);
+        //     purchase.SetDateTime(input.DateTime);
+        //     purchase.SetDiscount(input.Discount);
+        //     purchase.SetPaidAmount(input.PaidAmount);
 
-            // Replace products (simple approach: create new product entities)
-            var domainProducts = input.Products.Select(p => new PurchaseProduct(
-                Guid.NewGuid(),
-                p.Warehouse,
-                p.Product,
-                p.Quantity,
-                p.Price)).ToList();
+        //     // Replace products (simple approach: create new product entities)
+        //     var domainProducts = input.Products.Select(p => new PurchaseProduct(
+        //         Guid.NewGuid(),
+        //         p.Warehouse,
+        //         p.Product,
+        //         p.Quantity,
+        //         p.Price)).ToList();
 
-            purchase.ReplaceProducts(domainProducts);
+        //     purchase.ReplaceProducts(domainProducts);
 
-            await _purchaseRepository.UpdateAsync(purchase, autoSave: true);
-        }
+        //     await _purchaseRepository.UpdateAsync(purchase, autoSave: true);
+        // }
 
         // public async Task DeleteAsync(Guid id)
         // {
         //     await _purchaseRepository.DeleteAsync(id);
         // }
-
-        public async Task DeleteAsync(Guid id)
+        public async Task UpdateAsync(Guid id, CreateUpdatePurchaseDto input)
         {
+            if (input.Products == null || input.Products.Count == 0)
+                throw new UserFriendlyException("Purchase must contain at least one product.");
+
+            // 1️⃣ Load existing purchase WITH products
             var purchase = await _purchaseRepository.GetWithProductsAsync(id)
-                ?? throw new UserFriendlyException("Purchase not found");
-            // Logger.LogWarning($"Products count = {purchase.Products.Count}"); this shows producs count =0. 
+                ?? throw new UserFriendlyException("Purchase not found.");
 
-            foreach (var product in purchase.Products)
+            // 2️⃣ Create lookup for OLD products
+            var oldProducts = purchase.Products.ToDictionary(
+                p => (p.Product.ToLower(), p.Warehouse.ToLower()),
+                p => p
+            );
+
+            // 3️⃣ Create lookup for NEW products
+            var newProducts = input.Products.ToDictionary(
+                p => (p.Product.ToLower(), p.Warehouse.ToLower()),
+                p => p
+            );
+
+            // 4️⃣ Handle REMOVED & CHANGED products
+            foreach (var oldItem in oldProducts)
             {
-                var stock = await _stockRepository.FirstOrDefaultAsync(s =>
-                    s.Product == product.Product &&
-                    s.Warehouse == product.Warehouse
-                );
-
-                if (stock == null)
-                    continue;
-
-                stock.Quantity -= product.Quantity;
-
-                if (stock.Quantity <= 0)
+                if (!newProducts.TryGetValue(oldItem.Key, out var newItem))
                 {
-                    await _stockRepository.DeleteAsync(stock);
+                    // ❌ Product removed → reduce full quantity
+                    await ReduceStockAsync(
+                        oldItem.Value.Product,
+                        oldItem.Value.Warehouse,
+                        oldItem.Value.Quantity
+                    );
                 }
                 else
                 {
-                    await _stockRepository.UpdateAsync(stock);
+                    // 🔄 Quantity difference
+                    var diff = newItem.Quantity - oldItem.Value.Quantity;
+
+                    if (diff > 0)
+                    {
+                        await IncreaseStockAsync(
+                            oldItem.Value.Product,
+                            oldItem.Value.Warehouse,
+                            diff
+                        );
+                    }
+                    else if (diff < 0)
+                    {
+                        await ReduceStockAsync(
+                            oldItem.Value.Product,
+                            oldItem.Value.Warehouse,
+                            Math.Abs(diff)
+                        );
+                    }
                 }
             }
 
-            await _purchaseRepository.DeleteAsync(purchase);
+            // 5️⃣ Handle NEWLY ADDED products
+            foreach (var newItem in newProducts)
+            {
+                if (!oldProducts.ContainsKey(newItem.Key))
+                {
+                    await IncreaseStockAsync(
+                        newItem.Value.Product,
+                        newItem.Value.Warehouse,
+                        newItem.Value.Quantity
+                    );
+                }
+            }
+
+            // 6️⃣ Update purchase main fields
+            purchase.SetSupplierName(input.SupplierName);
+            purchase.SetDateTime(input.DateTime);
+            purchase.SetDiscount(input.Discount);
+            purchase.SetPaidAmount(input.PaidAmount);
+
+            // 7️⃣ Replace products in purchase
+            var domainProducts = input.Products.Select(p =>
+                new PurchaseProduct(
+                    Guid.NewGuid(),
+                    p.Warehouse,
+                    p.Product,
+                    p.Quantity,
+                    p.Price
+                )
+            ).ToList();
+
+            purchase.ReplaceProducts(domainProducts);
+
+            // 8️⃣ Save
+            await _purchaseRepository.UpdateAsync(purchase, autoSave: true);
         }
+        private async Task IncreaseStockAsync(string product, string warehouse, int quantity)
+        {
+            if (quantity <= 0) return;
+
+            var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+                s.Product.ToLower() == product.ToLower() &&
+                s.Warehouse.ToLower() == warehouse.ToLower()
+            );
+
+            if (stock == null)
+            {
+                await _stockRepository.InsertAsync(
+                    new Stock(Guid.NewGuid(), product, warehouse, quantity)
+                );
+            }
+            else
+            {
+                stock.Increase(quantity);
+                await _stockRepository.UpdateAsync(stock);
+            }
+        }
+        private async Task ReduceStockAsync(string product, string warehouse, int quantity)
+        {
+            if (quantity <= 0) return;
+
+            var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+                s.Product.ToLower() == product.ToLower() &&
+                s.Warehouse.ToLower() == warehouse.ToLower()
+            );
+
+            if (stock == null)
+                return;
+
+            stock.ReduceOrClear(quantity);
+
+            if (stock.IsEmpty())
+            {
+                await _stockRepository.DeleteAsync(stock);
+            }
+            else
+            {
+                await _stockRepository.UpdateAsync(stock);
+            }
+        }
+
+        // public async Task DeleteAsync(Guid id)
+        // {
+        //     var purchase = await _purchaseRepository.GetWithProductsAsync(id)
+        //         ?? throw new UserFriendlyException("Purchase not found");
+        //     // Logger.LogWarning($"Products count = {purchase.Products.Count}"); this shows producs count =0. 
+
+        //     foreach (var product in purchase.Products)
+        //     {
+        //         var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+        //             s.Product.ToLower() == product.Product.ToLower() &&
+        //             s.Warehouse.ToLower() == product.Warehouse.ToLower()
+        //         );
+
+        //         if (stock == null)
+        //             continue;
+
+        //         stock.Quantity -= product.Quantity;
+
+        //         if (stock.Quantity <= 0)
+        //         {
+        //             await _stockRepository.DeleteAsync(stock);
+        //         }
+        //         else
+        //         {
+        //             await _stockRepository.UpdateAsync(stock);
+        //         }
+        //     }
+
+        //     await _purchaseRepository.DeleteAsync(purchase);
+        // }
+        public async Task DeleteAsync(Guid id)
+{
+    var purchase = await _purchaseRepository.GetWithProductsAsync(id)
+        ?? throw new UserFriendlyException("Purchase not found");
+
+    foreach (var product in purchase.Products)
+    {
+        var stock = await _stockRepository.FirstOrDefaultAsync(s =>
+            s.Product.ToLower() == product.Product.ToLower() &&
+            s.Warehouse.ToLower() == product.Warehouse.ToLower()
+        );
+
+        if (stock == null)
+            continue;
+
+        // Reduce as much as possible
+        var reduceQty = Math.Min(stock.Quantity, product.Quantity);
+
+        stock.ReduceOrClear(reduceQty);
+
+        if (stock.IsEmpty())
+        {
+            await _stockRepository.DeleteAsync(stock);
+        }
+        else
+        {
+            await _stockRepository.UpdateAsync(stock);
+        }
+    }
+
+    await _purchaseRepository.DeleteAsync(purchase);
+}
 
     }
 }
