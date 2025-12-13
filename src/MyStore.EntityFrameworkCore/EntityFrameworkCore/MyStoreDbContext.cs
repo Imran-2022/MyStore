@@ -16,6 +16,7 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using MyStore.Purchases;
 using MyStore.Stocks;
+using MyStore.Sales;
 namespace MyStore.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
@@ -42,6 +43,8 @@ public class MyStoreDbContext :
      * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
      */
     public DbSet<Stock> Stocks { get; set; }
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleProduct> SaleProducts { get; set; }
     public DbSet<Purchase> Purchases { get; set; }
     public DbSet<PurchaseProduct> PurchaseProducts { get; set; }
     // Identity
@@ -132,6 +135,26 @@ public class MyStoreDbContext :
                 b.Property(x => x.Product).IsRequired().HasMaxLength(128);
                 b.Property(x => x.Warehouse).IsRequired().HasMaxLength(128);
                 b.Property(x => x.Quantity).IsRequired();
+            });
+
+         // Sale mapping
+            builder.Entity<Sale>(b =>
+            {
+                b.ToTable("Sales");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.Customer).IsRequired().HasMaxLength(150);
+                b.Property(x => x.DateTime).IsRequired();
+                b.HasMany(x => x.Products).WithOne().HasForeignKey("SaleId").IsRequired();
+            });
+
+            builder.Entity<SaleProduct>(b =>
+            {
+                b.ToTable("SaleProducts");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.Product).IsRequired().HasMaxLength(100);
+                b.Property(x => x.Warehouse).IsRequired().HasMaxLength(100);
+                b.Property(x => x.Quantity).IsRequired();
+                b.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
             });
     }
 }
