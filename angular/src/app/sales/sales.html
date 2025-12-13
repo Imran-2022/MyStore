@@ -1,118 +1,151 @@
 <div class="container-fluid mt-4">
+
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Sales List</h3>
-    <button class="btn btn-primary" (click)="openModal(newSaleModal)">New Sale</button>
+    <h3>Sales</h3>
+    <button class="btn btn-primary" (click)="openModal(saleModal)">New Sale</button>
   </div>
 
+  <!-- SALES TABLE -->
   <div class="table-responsive">
     <table class="table table-bordered">
       <thead class="table-secondary text-center">
         <tr>
-          <th>Customer Name</th>
-          <th>Date & Time</th>
-          <th>Sales Details</th>
-          <th>Grand Total ($)</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Details</th>
+          <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let sale of sales">
-          <td class="align-middle text-center">{{ sale.customer }}</td>
-          <td class="align-middle text-center">{{ sale.dateTime | date:'medium' }}</td>
+        <tr *ngFor="let s of sales">
+          <td class="text-center">{{ s.customer }}</td>
+          <td class="text-center">{{ s.dateTime | date:'medium' }}</td>
           <td>
-            <table class="table table-bordered mb-0 text-center">
-              <thead class="table-secondary">
+            <table class="table table-sm table-bordered mb-0 text-center">
+              <thead class="table-light">
                 <tr>
                   <th>Warehouse</th>
                   <th>Product</th>
-                  <th>Item No</th>
-                  <th>Price per Item ($)</th>
-                  <th>Total ($)</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let p of sale.products">
-                  <td>{{ p.warehouse?.name }}</td>
-                  <td>{{ p.product?.name }}</td>
+                <tr *ngFor="let p of s.products">
+                  <td>{{ p.warehouse }}</td>
+                  <td>{{ p.product }}</td>
                   <td>{{ p.quantity }}</td>
-                  <td>{{ p.product?.price.toFixed(2) }}</td>
-                  <td>{{ calculateItemTotal(p).toFixed(2) }}</td>
+                  <td>{{ p.price }}</td>
+                  <td>{{ p.quantity * p.price }}</td>
                 </tr>
               </tbody>
             </table>
           </td>
-          <td class="align-middle text-center">{{ sale.grandTotal.toFixed(2) }}</td>
+          <td class="text-center fw-bold">{{ s.grandTotal }}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- New Sale Modal -->
-<ng-template #newSaleModal let-modal>
+<!-- NEW SALE MODAL -->
+<ng-template #saleModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">New Sale</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <button class="btn-close" (click)="modal.dismiss()"></button>
   </div>
+
   <form #saleForm="ngForm">
     <div class="modal-body">
+
       <div class="mb-3">
-        <label for="customer" class="form-label">Customer Name</label>
-        <input id="customer" placeholder="Enter customer name" class="form-control" name="customer" [(ngModel)]="newSale.customer" required />
+        <label>Customer</label>
+        <input class="form-control" [(ngModel)]="newSale.customer" name="customer" required>
       </div>
 
       <div class="mb-3">
-        <label for="date" class="form-label">Date</label>
-        <input id="date"  type="datetime-local" class="form-control" name="dateTime" [(ngModel)]="newSale.dateTime" required />
+        <label>Date</label>
+        <input type="datetime-local" class="form-control" [(ngModel)]="newSale.dateTime" name="dateTime" required>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Products</label>
-        <table class="table table-bordered text-center">
-          <thead class="table-secondary">
-            <tr>
-              <th>Warehouse</th>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Total ($)</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let prod of newSale.products; let i = index">
-              <td>
-                <select class="form-select" [(ngModel)]="newSale.products[i].warehouse" name="warehouse{{i}}" required
-                        (change)="newSale.products[i].product=undefined; calculateGrandTotal()">
-                  <option [ngValue]="undefined" disabled>Select warehouse</option>
-                  <option *ngFor="let w of warehouses" [ngValue]="w">{{ w.name }}</option>
-                </select>
-              </td>
-              <td>
-                <select class="form-select" [(ngModel)]="newSale.products[i].product" name="product{{i}}" required (change)="calculateGrandTotal()">
-                  <option [ngValue]="undefined" disabled>Select product</option>
-                  <option *ngFor="let p of availableProducts(i)" [ngValue]="p">{{ p.name }} (${{p.price}})</option>
-                </select>
-              </td>
-              <td>
-                <input type="number" class="form-control" [(ngModel)]="newSale.products[i].quantity"
-                       name="quantity{{i}}" min="1" required (input)="calculateGrandTotal()" />
-              </td>
-              <td>{{ calculateItemTotal(prod).toFixed(2) }}</td>
-              <td>
-                <button type="button" class="btn btn-danger btn-sm" (click)="removeProductRow(i)" [disabled]="newSale.products.length === 1">x</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button type="button" class="btn btn-secondary btn-sm" (click)="addProductRow()">Add Product</button>
+      <!-- PRODUCTS -->
+      <table class="table table-bordered text-center">
+        <thead class="table-secondary">
+          <tr>
+            <th style="width:25%">Warehouse</th>
+            <th style="width:25%">Product</th>
+            <th style="width:15%">Qty</th>
+            <th style="width:15%">Price</th>
+            <th style="width:15%">Total</th>
+            <th style="width:5%"></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of newSale.products; let i = index">
+
+            <!-- WAREHOUSE -->
+            <td>
+              <select class="form-select form-select-lg" style="min-width:220px" [(ngModel)]="p.warehouse"
+                name="warehouse{{i}}" required (change)="onWarehouseChange(i)">
+                <option [ngValue]="null" disabled>Select Warehouse</option>
+                <option *ngFor="let w of warehouses" [value]="w">
+                  {{ w }}
+                </option>
+              </select>
+            </td>
+
+            <!-- PRODUCT -->
+            <td>
+              <select class="form-select form-select-lg" style="min-width:220px" [(ngModel)]="p.product"
+                name="product{{i}}" required (change)="onProductChange(i)">
+                <option [ngValue]="null" disabled>Select Product</option>
+                <option *ngFor="let prod of getProducts(p.warehouse)" [value]="prod.product">
+                  {{ prod.product }}
+                </option>
+              </select>
+            </td>
+
+            <!-- QTY -->
+            <td>
+              <input type="number" class="form-control" [(ngModel)]="p.quantity" name="qty{{i}}" min="1"
+                (input)="calculateTotal()">
+            </td>
+
+            <!-- PRICE -->
+            <td>
+              <input type="number" class="form-control" [(ngModel)]="p.price" name="price{{i}}"
+                (input)="calculateTotal()">
+            </td>
+
+            <!-- TOTAL -->
+            <td>{{ p.quantity * p.price }}</td>
+
+            <!-- ACTION -->
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="removeRow(i)" [disabled]="newSale.products.length === 1">
+                x
+              </button>
+            </td>
+
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="btn btn-secondary btn-sm" (click)="addRow()">Add Product</button>
+
+      <div class="text-end mt-3">
+        <h5>Grand Total: {{ newSale.grandTotal }}</h5>
       </div>
 
-      <div class="text-end mt-2">
-        <h5>Grand Total: ${{ newSale.grandTotal.toFixed(2) }}</h5>
-      </div>
     </div>
+
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="!canSaveSale()" (click)="saveSale(modal, saleForm.valid)">Save Sale</button>
+      <button class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
+      <button class="btn btn-primary" [disabled]="!canSave()" (click)="saveSale(modal)">
+        Save
+      </button>
     </div>
   </form>
 </ng-template>
