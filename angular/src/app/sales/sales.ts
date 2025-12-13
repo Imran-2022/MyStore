@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { StockDto, StockService } from '../proxy/stocks';
+import { StockService, StockDto } from '../proxy/stocks';
+import { CreateUpdateSaleDto, SaleDto, SaleService } from '../proxy/sales';
 
 interface SaleProduct {
   warehouse: string | null;
@@ -12,6 +13,7 @@ interface SaleProduct {
 }
 
 interface Sale {
+  id?: string;
   customer: string;
   dateTime: string;
   products: SaleProduct[];
@@ -30,16 +32,21 @@ export class Sales implements OnInit {
   stockList: StockDto[] = [];
   warehouses: string[] = [];
 
-  // Sales records (local for now)
-  sales: Sale[] = [];
+  // Sales records from backend
+  sales: SaleDto[] = [];
 
   // New sale being created
   newSale: Sale = this.emptySale();
 
-  constructor(private modal: NgbModal, private stockService: StockService) {}
+  constructor(
+    private modal: NgbModal,
+    private stockService: StockService,
+    private saleService: SaleService
+  ) {}
 
   ngOnInit() {
     this.loadStock();
+    this.loadSales();
   }
 
   // Load stock from backend
@@ -52,6 +59,11 @@ export class Sales implements OnInit {
         this.stockList.filter(s => s.quantity > 0).map(s => s.warehouse)
       )];
     });
+  }
+
+  // Load sales from backend
+  loadSales() {
+    this.saleService.getList().subscribe(res => this.sales = res);
   }
 
   // Initialize empty sale
@@ -70,7 +82,7 @@ export class Sales implements OnInit {
     this.modal.open(tpl, { size: 'xl' });
   }
 
-  // Add / remove rows
+  // Add / remove product rows
   addRow() {
     this.newSale.products.push({ warehouse: null, product: null, quantity: 1, price: 0 });
   }
@@ -80,7 +92,7 @@ export class Sales implements OnInit {
     this.calculateTotal();
   }
 
-  // Available products in selected warehouse with stock
+  // Products available in selected warehouse with positive stock
   getProducts(warehouse: string | null) {
     return this.stockList.filter(
       s => s.warehouse === warehouse && s.quantity > 0
@@ -89,8 +101,9 @@ export class Sales implements OnInit {
 
   // When warehouse changes, reset product & price
   onWarehouseChange(i: number) {
-    this.newSale.products[i].product = null;
-    this.newSale.products[i].price = 0;
+    const p = this.newSale.products[i];
+    p.product = null;
+    p.price = 0;
     this.calculateTotal();
   }
 
@@ -101,7 +114,7 @@ export class Sales implements OnInit {
       s => s.warehouse === p.warehouse && s.product === p.product
     );
     if (stock) {
-      // Default price = 0, user can edit
+      // Default price = 0 (can be edited by user)
       p.price = p.price || 0;
     }
     this.calculateTotal();
@@ -115,16 +128,35 @@ export class Sales implements OnInit {
     );
   }
 
-  // Validate sale form
+  // Form validation
   canSave(): boolean {
     return this.newSale.customer.trim() !== '' &&
       this.newSale.products.every(p => p.warehouse && p.product && p.quantity > 0);
   }
 
-  // Save sale (local for now)
+  // Save sale using SaleService (backend)
   saveSale(modal: any) {
     if (!this.canSave()) return;
-    this.sales.push(JSON.parse(JSON.stringify(this.newSale)));
-    modal.close();
+
+    const dto: CreateUpdateSaleDto = {
+      customer: this.newSale.customer,
+      dateTime: this.newSale.dateTime,
+      products: this.newSale.products.map(p => ({
+        warehouse: p.warehouse!,
+        product: p.product!,
+        quantity: p.quantity,
+        price: p.price
+      }))
+    };
+
+    this.saleService.create(dto).subscribe({
+      next: () => {
+        this.loadSales(); // refresh sales list
+        modal.close();
+      },
+      error: err => {
+        console.error('Error saving sale', err);
+      }
+    });
   }
 }

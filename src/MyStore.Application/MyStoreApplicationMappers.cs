@@ -1,4 +1,5 @@
 using MyStore.Purchases;
+using MyStore.Sales;
 using MyStore.Stocks;
 using Riok.Mapperly.Abstractions;
 using Volo.Abp.Mapperly;
@@ -37,3 +38,18 @@ public partial class StockMapper : MapperBase<Stock, StockDto>
     public override partial StockDto Map(Stock source);
     public override partial void Map(Stock source, StockDto destination);
 }
+
+[Mapper]
+public partial class SaleMapper : MapperBase<Sale, SaleDto>
+{
+    public override partial SaleDto Map(Sale source);
+    public override partial void Map(Sale source, SaleDto destination);
+}
+
+[Mapper]
+public partial class SaleProductMapper : MapperBase<SaleProduct, SaleProductDto>
+{
+    public override partial SaleProductDto Map(SaleProduct source);
+    public override partial void Map(SaleProduct source, SaleProductDto destination);
+}
+
