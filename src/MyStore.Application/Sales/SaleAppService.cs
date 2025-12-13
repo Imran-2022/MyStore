@@ -53,6 +53,18 @@ namespace MyStore.Sales
             return ObjectMapper.Map<Sale, SaleDto>(sale);
         }
 
+        public async Task DeleteAsync(Guid id)
+        {
+            var sale = await _saleRepository.FindAsync(id);
+            if (sale == null)
+            {
+                throw new UserFriendlyException("Sale not found");
+            }
+
+            await _saleRepository.DeleteAsync(sale, autoSave: true);
+        }
+
+
     }
 }
 

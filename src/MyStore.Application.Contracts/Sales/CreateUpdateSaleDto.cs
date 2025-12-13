@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MyStore.Sales;
 
-public class CreateUpdateSaleProductDto
+public class CreateUpdateSaleDto
 {
     public string Customer { get; set; }
     public DateTime DateTime { get; set; }
