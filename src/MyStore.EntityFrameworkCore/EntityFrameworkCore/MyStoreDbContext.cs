@@ -122,6 +122,7 @@ public class MyStoreDbContext :
             b.HasOne(pp => pp.Purchase)
              .WithMany(p => p.Products)
              .HasForeignKey(pp => pp.PurchaseId)
+             .OnDelete(DeleteBehavior.Cascade) // add this
              .IsRequired();
         });
 
@@ -137,24 +138,30 @@ public class MyStoreDbContext :
                 b.Property(x => x.Quantity).IsRequired();
             });
 
-         // Sale mapping
-            builder.Entity<Sale>(b =>
-            {
-                b.ToTable("Sales");
-                b.HasKey(x => x.Id);
-                b.Property(x => x.Customer).IsRequired().HasMaxLength(150);
-                b.Property(x => x.DateTime).IsRequired();
-                b.HasMany(x => x.Products).WithOne().HasForeignKey("SaleId").IsRequired();
-            });
+        builder.Entity<Sale>(b =>
+{
+b.ToTable("Sales");
+b.HasKey(x => x.Id);
 
-            builder.Entity<SaleProduct>(b =>
-            {
-                b.ToTable("SaleProducts");
-                b.HasKey(x => x.Id);
-                b.Property(x => x.Product).IsRequired().HasMaxLength(100);
-                b.Property(x => x.Warehouse).IsRequired().HasMaxLength(100);
-                b.Property(x => x.Quantity).IsRequired();
-                b.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
-            });
+b.Property(x => x.Customer).IsRequired().HasMaxLength(150);
+b.Property(x => x.DateTime).IsRequired();
+
+b.HasMany(s => s.Products)
+ .WithOne(p => p.Sale)
+ .HasForeignKey(p => p.SaleId)
+ .OnDelete(DeleteBehavior.Cascade);
+});
+
+        builder.Entity<SaleProduct>(b =>
+        {
+            b.ToTable("SaleProducts");
+            b.HasKey(x => x.Id);
+
+            b.Property(x => x.Product).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Warehouse).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Quantity).IsRequired();
+            b.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
+        });
+
     }
 }

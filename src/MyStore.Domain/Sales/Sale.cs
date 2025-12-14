@@ -6,37 +6,45 @@ namespace MyStore.Sales
 {
     public class Sale : AggregateRoot<Guid>
     {
-        public string Customer { get; set; }
-        public DateTime DateTime { get; set; }
-        public List<SaleProduct> Products { get; set; }
+        public string Customer { get; private set; }
+        public DateTime DateTime { get; private set; }
 
-        protected Sale() { }
+        // Simple list, no backing field
+        public List<SaleProduct> Products { get; private set; } = new();
 
-        public Sale(Guid id, string customer, DateTime dateTime, List<SaleProduct> products) : base(id)
+        protected Sale() { } // ORM
+
+        internal Sale(Guid id, string customer, DateTime dateTime, List<SaleProduct> products)
+            : base(id)
         {
-            Customer = customer;
+            Customer = !string.IsNullOrWhiteSpace(customer) ? customer
+                : throw new ArgumentException("Customer cannot be empty.");
             DateTime = dateTime;
-            Products = products ?? new List<SaleProduct>();
+
+            if (products == null || products.Count == 0)
+                throw new ArgumentException("Sale must have at least one product.");
+
+            Products = products;
         }
-    }
 
-    public class SaleProduct : Entity<Guid>
-    {
-        public string Warehouse { get; set; }
-        public string Product { get; set; }
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-
-        protected SaleProduct() { }
-
-        public SaleProduct(Guid id, string warehouse, string product, int quantity, decimal price) : base(id)
+        public void ReplaceProducts(List<SaleProduct> products)
         {
-            Warehouse = warehouse;
-            Product = product;
-            Quantity = quantity;
-            Price = price;
+            if (products == null || products.Count == 0)
+                throw new ArgumentException("Sale must have at least one product.");
+
+            Products = products;
         }
 
-        public decimal Total => Quantity * Price;
+        public void SetCustomer(string customer)
+        {
+            if (string.IsNullOrWhiteSpace(customer))
+                throw new ArgumentException("Customer cannot be empty.");
+            Customer = customer;
+        }
+
+        public void SetDateTime(DateTime dateTime)
+        {
+            DateTime = dateTime;
+        }
     }
 }
