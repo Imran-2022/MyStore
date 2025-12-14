@@ -10,38 +10,40 @@ namespace MyStore.Stocks
         public string Warehouse { get; private set; }
         public int Quantity { get; private set; }
 
-        protected Stock() { }
-
-        public Stock(Guid id, string product, string warehouse, int quantity)
+        // Only domain services (StockManager) can create Stock
+        internal Stock(Guid id, string product, string warehouse, int quantity)
             : base(id)
         {
+            if (string.IsNullOrWhiteSpace(product)) throw new BusinessException("Stock:ProductRequired");
+            if (string.IsNullOrWhiteSpace(warehouse)) throw new BusinessException("Stock:WarehouseRequired");
+            if (quantity < 0) throw new BusinessException("Stock:QuantityCannotBeNegative");
+
             Product = product;
             Warehouse = warehouse;
             Quantity = quantity;
         }
 
-        public void Increase(int quantity)
+        internal void Increase(int quantity)
         {
-            if (quantity <= 0)
-                throw new BusinessException("Quantity must be positive");
-
+            if (quantity <= 0) throw new BusinessException("Stock:QuantityMustBeGreaterThanZero");
             Quantity += quantity;
         }
 
-        public void Reduce(int quantity)
+        internal void Reduce(int quantity)
         {
-            if (quantity <= 0)
-                throw new BusinessException("Quantity must be positive");
+            if (quantity <= 0) throw new BusinessException("Stock:QuantityMustBeGreaterThanZero");
+
+            if (Quantity < quantity)
+                throw new BusinessException("Stock:NotEnoughStock");
 
             Quantity -= quantity;
-            if (Quantity < 0)
-                Quantity = 0;
         }
+       
         public void ReduceOrClear(int quantity)
         {
             Reduce(quantity);
         }
         public bool IsEmpty() => Quantity <= 0;
-    }
 
+    }
 }

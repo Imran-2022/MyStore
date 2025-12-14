@@ -139,18 +139,18 @@ public class MyStoreDbContext :
             });
 
         builder.Entity<Sale>(b =>
-{
-b.ToTable("Sales");
-b.HasKey(x => x.Id);
+        {
+            b.ToTable("Sales");
+            b.HasKey(x => x.Id);
 
-b.Property(x => x.Customer).IsRequired().HasMaxLength(150);
-b.Property(x => x.DateTime).IsRequired();
+            b.Property(x => x.Customer).IsRequired().HasMaxLength(150);
+            b.Property(x => x.DateTime).IsRequired();
 
-b.HasMany(s => s.Products)
- .WithOne(p => p.Sale)
- .HasForeignKey(p => p.SaleId)
- .OnDelete(DeleteBehavior.Cascade);
-});
+            b.HasMany(s => s.Products)
+            .WithOne(p => p.Sale)
+            .HasForeignKey(p => p.SaleId)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
 
         builder.Entity<SaleProduct>(b =>
         {

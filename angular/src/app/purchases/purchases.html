@@ -72,7 +72,7 @@
 <!-- NEW PURCHASE MODAL -->
 <ng-template #purchaseModal let-modal>
     <div class="modal-header">
-        <h5 class="modal-title">New Purchase</h5>
+        <h5 class="modal-title">{{existingPurchaseMode?'Update Purchase':'New Purchase'}}</h5>
         <button class="btn-close" (click)="modal.dismiss()"></button>
     </div>
 

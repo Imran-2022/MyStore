@@ -1,25 +1,33 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Domain.Repositories;
 
 namespace MyStore.Stocks
 {
     public class StockAppService : ApplicationService, IStockAppService
     {
-        private readonly IRepository<Stock, Guid> _stockRepository;
+        private readonly StockManager _stockManager;
 
-        public StockAppService(IRepository<Stock, Guid> stockRepository)
+        public StockAppService(StockManager stockManager)
         {
-            _stockRepository = stockRepository;
+            _stockManager = stockManager;
         }
 
         public async Task<List<StockDto>> GetListAsync()
         {
-            var items = await _stockRepository.GetListAsync();
+            // Application service calls domain service instead of repository
+            var stocks = await _stockManager.GetAllAsync();
+            return ObjectMapper.Map<List<Stock>, List<StockDto>>(stocks);
+        }
 
-            return ObjectMapper.Map<List<Stock>, List<StockDto>>(items);
+        public async Task IncreaseStockAsync(string product, string warehouse, int quantity)
+        {
+            await _stockManager.IncreaseAsync(product, warehouse, quantity);
+        }
+
+        public async Task ReduceStockAsync(string product, string warehouse, int quantity)
+        {
+            await _stockManager.ReduceAsync(product, warehouse, quantity);
         }
     }
 }

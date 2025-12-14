@@ -19,7 +19,7 @@ namespace MyStore.Purchases
 
         private Purchase() { } // For ORM
 
-        public Purchase(
+        internal Purchase(
             string purchaseCode,
             string supplierName,
             DateTime dateTime,

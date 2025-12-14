@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Domain.Services;
 using Volo.Abp;
+using System.Collections.Generic;
 
 namespace MyStore.Stocks
 {
@@ -14,6 +15,11 @@ namespace MyStore.Stocks
         {
             _stockRepository = stockRepository;
         }
+        public async Task<List<Stock>> GetAllAsync()
+        {
+            return await _stockRepository.GetListAsync();
+        }
+
 
         public async Task IncreaseAsync(string product, string warehouse, int quantity)
         {
@@ -44,8 +50,8 @@ namespace MyStore.Stocks
             if (stock == null)
                 throw new BusinessException($"Stock not found for {product} in {warehouse}");
 
-            if (stock.Quantity < quantity)
-                throw new BusinessException($"Not enough stock for {product} in {warehouse}");
+            // if (stock.Quantity < quantity)
+            //     throw new BusinessException($"Not enough stock for {product} in {warehouse}");
 
             stock.ReduceOrClear(quantity);
 

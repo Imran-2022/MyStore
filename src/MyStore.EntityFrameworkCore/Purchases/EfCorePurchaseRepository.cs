@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic; // <-- Required for List<Purchase>
+using System.Collections.Generic; 
 using MyStore.EntityFrameworkCore;
 using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore; // <-- Important: Already there
+using Microsoft.EntityFrameworkCore; 
 
 namespace MyStore.Purchases
 {
